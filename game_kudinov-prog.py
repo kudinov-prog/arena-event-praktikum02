@@ -47,18 +47,27 @@ def main():
                 self.hp_amount += thing.life_amount
 
         def attacks(self, defender):
-            pass
+            print(f'{self.name} атакует {defender.name}')
+            defender.defends(self)
         
-        def defend(self, defender):
-            pass
+        def defends(self, attacker):
+            self.hp_amount -= (attacker.attack_damage - attacker.attack_damage*self.final_protection)
+            self.hp_amount = round(self.hp_amount, 2)
+  
+            if self.hp_amount > 0:
+                print(f'{self.name} выживает!')
+            elif self.hp_amount < 0:
+                print(f'{self.name} проигрывает и покидает арену!')
 
 
     class Paladin(Person):
         def __init__(self, name, hp_amount, base_attack, base_protection):
             super().__init__(name, hp_amount, base_attack, base_protection)
+
             self.hp_amount = hp_amount*2
             self.base_protection = round(base_protection*2, 2)
             self.final_protection = round(base_protection*2, 2)
+
             print (f'Cоздан новый персонаж - Паладин {self.name} '
                    f'с характеристиками: здоровье = {hp_amount}, '
                    f'атака = {base_attack}, '
@@ -68,8 +77,10 @@ def main():
     class Warrior(Person):
         def __init__(self, name, hp_amount, base_attack, base_protection):
             super().__init__(name, hp_amount, base_attack, base_protection)
+
             self.base_attack = base_attack*2
             self.attack_damage = base_attack*2
+
             print (f'Cоздан новый персонаж - Воин {self.name} '
                    f'с характеристиками: здоровье = {hp_amount}, '
                    f'атака = {base_attack}, '
@@ -77,38 +88,91 @@ def main():
 
 
     def create_things():
+
         for new_thing in range(0, 30):
             thing = Thing(name=f'Item_{new_thing}', protection=round(0.01*randint(0, 10), 2),
-                        attack=randint(5, 15), life_amount=randint(1, 20))
-            things.append(thing)      
+                        attack=randint(5, 30), life_amount=randint(1, 20))
+            things.append(thing)
+        things.sort(key=lambda x: x.protection)      
 
     def create_heroes_and_equip():
+
         len_names = len(NAMES)-1
+
         for new_hero in range(0, 10):
+
             hero_class = CLASSES[randint(0, 1)]
+
             if hero_class == "Paladin":
                 hero = Paladin(name=NAMES[randint(0, len_names)],
                                hp_amount=100,
-                               base_attack=randint(10, 50),
-                               base_protection=round(0.01*randint(0, 70), 2))
+                               base_attack=randint(0, 70),
+                               base_protection=round(0.01*randint(0, 40), 2))
             else:
                 hero = Warrior(name=NAMES[randint(0, len_names)],
                                hp_amount=100,
-                               base_attack=randint(10, 50),
-                               base_protection=round(0.01*randint(0, 70), 2))
+                               base_attack=randint(0, 70),
+                               base_protection=round(0.01*randint(0, 40), 2))
+
             hero_things = []
+
             for item in range(1, randint(1, 4)):
                 thing = things[randint(1, 24)]
                 hero_things.append(thing)
+
             hero.setThings(hero_things)
+
             heroes.append(hero)
+
         print(f'Итого создано {len(heroes)} героев!')
+
     def fight():
-        pass
+
+        print('Да начнется великое сражение за королевский трон!')
+
+        round_num = 0
+
+        while len(heroes) > 1:
+
+            round_num += 1
+
+            print(f'\n-----Начинается {round_num} раунд!-----\n')
+
+            fighter_1 = heroes[randint(0, len(heroes)-1)]
+            fighter_2 = heroes[randint(0, len(heroes)-1)]
+
+            while fighter_2 == fighter_1:
+                fighter_2 = heroes[randint(0, len(heroes)-1)]
+
+            print(f'В схватке сойдутся {fighter_1.name} и {fighter_2.name}!')
+
+            while fighter_2.hp_amount >= 0 and fighter_1.hp_amount >= 0:
+
+                fighter_1.attacks(fighter_2)
+
+                if fighter_2.hp_amount <= 0:
+                    break
+
+                fighter_2.attacks(fighter_1)
+            
+            if fighter_1.hp_amount <= 0:
+                heroes.remove(fighter_1)
+            elif fighter_2.hp_amount <= 0:
+                heroes.remove(fighter_2)
+
+        winner_fight = heroes[0].name
+
+        print('\n>>>>> Битва закончена <<<<<')
+        print(f'\n>>>>> Победитель великой битвы {winner_fight} <<<<<\n')
+
+            
+
+
+
 
     create_things()
     create_heroes_and_equip()
-    #print(heroes[0].hp_amount)
+    fight()
 
 if __name__ == "__main__":
     main()
